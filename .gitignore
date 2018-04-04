@@ -1,0 +1,18 @@
+### IDE ###
+
+.idea/
+
+### Node.js ###
+
+npm-debug.log
+node_modules/
+
+### Snapcraft ###
+
+snap/
+prime/
+parts/
+stage/
+
+*.snap
+*.tar.bz2

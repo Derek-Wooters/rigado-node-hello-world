@@ -1,0 +1,34 @@
+{
+  "name": "deviceops-hello-world",
+  "version": "0.0.1",
+  "description": "Example of snapped Node.js application for communications with Nordic Thingy:52",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=6.11.4"
+  },
+  "files": [
+    "index.js",
+    "config.json"
+  ],
+  "bin": "index.js",
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [
+    "rigado",
+    "nordic",
+    "thingy52",
+    "bluetooth",
+    "mqtt"
+  ],
+  "author": "Mikhail Vataleu",
+  "license": "MIT",
+  "dependencies": {
+    "mqtt": "^2.17.0",
+    "thingy52": "^1.0.4"
+  }
+}
