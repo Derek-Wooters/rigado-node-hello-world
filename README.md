@@ -1,1 +1,1 @@
-Start the Front End Project.
+Start the Project.
