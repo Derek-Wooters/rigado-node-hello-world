@@ -13,6 +13,8 @@ parts:
       - libudev-dev
       - libbluetooth-dev
       - python
+      - g++
+      - make
       - bluez
 
 apps:
@@ -23,6 +25,4 @@ apps:
     plugs:
       - home
       - network
-      - bluez
       - bluetooth-control
-
