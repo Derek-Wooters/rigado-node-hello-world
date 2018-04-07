@@ -1,6 +1,7 @@
 {
   "ble": {
-    "deviceMac": "*"
+    "hciDeviceNum": 0,
+    "deviceMAC": "*"
   },
   "mqtt": {
     "host": "broker.hivemq.com",

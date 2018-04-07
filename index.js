@@ -3,8 +3,8 @@
 'use strict';
 
 const os = require('os');
-const Thingy = require('thingy52');
 const MQTT = require('mqtt');
+let Thingy = null;
 
 let brokerConnectTaskId = null;
 let dataTransmissionTaskId = null;
@@ -27,8 +27,8 @@ const thingyState = {
 // Main
 // ==========
 
-init();
-start();
+const config = init();
+start(config);
 
 // App Utils
 // ==========
@@ -42,16 +42,23 @@ function loadConfig() {
 }
 
 function init() {
-    process.stdin.resume();
-    process.on('exit', exitHandler.bind(null));
-    process.on('SIGINT', exitHandler.bind(null));
-    process.on('SIGUSR1', exitHandler.bind(null));
-    process.on('SIGUSR2', exitHandler.bind(null));
-    process.on('uncaughtException', exitHandler.bind(null));
+    const config = loadConfig();
+    // Setup noble lib
+    process.env['NOBLE_HCI_DEVICE_ID'] = config.ble.hciDeviceNum;
+    Thingy = require('thingy52');
+    // Set exit handlers
+    process.on('exit', function () {
+        stop();
+    });
+    process.on('uncaughtException', function (err) {
+        console.error('uncaughtException:', err);
+        stop();
+        process.exit(-1);
+    });
+    return config;
 }
 
-function start() {
-    const config = loadConfig();
+function start(config) {
     console.log('=== Thingy:52 to MQTT ===');
     console.log('Configuration:', config);
     console.log('=========================');
@@ -68,21 +75,6 @@ function stop() {
     stopDataTransmissionTask();
     stopBrokerConnectTask();
     stopDiscoverThingyTask();
-}
-
-function exitHandler(options, err) {
-    try {
-        stop();
-    } catch (e) {
-        console.log(e.stack);
-        process.exit(-1);
-    }
-    if (err) {
-        console.log(err.stack);
-        process.exit(-1);
-    } else {
-        process.exit();
-    }
 }
 
 // Broker Utils
@@ -125,7 +117,6 @@ function brokerConnect(mqttConfig) {
         mqttClient = client;
         console.log('[MQTT] Successfully connected to: ' + mqttAddr);
         connectingToBroker = false;
-
     }
 
     function connectionProblemsHandler(err) {
@@ -149,7 +140,7 @@ function brokerDisconnect() {
 
 function startDiscoverThingyTask(config) {
     console.log('[BLE] Start Discovery Task ...');
-    const id = macToId(config.ble.deviceMac);
+    const id = macToId(config.ble.deviceMAC);
     Thingy.discoverWithFilter(function(device) {
         console.log('[BLE] Discover:',  device.id, 'target:', id);
         if (id === '*') return true;
