@@ -42,15 +42,19 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 #### RPI3 Ubuntu Core 16.04 (armhf)
 
  * Setup [development tools](https://developer.ubuntu.com/core/get-started/developer-setup) (snap classic)
- * ```sh
+```sh
    snap install classic --edge --devmode
    sudo classic
    sudo apt update
-   sudo apt install snapcraft build-essential git```
+   sudo apt install snapcraft build-essential git
+```
  * Install [BlueZ](http://www.bluez.org/)
- * ```sh
-   snap install bluez
-   snap connect bluez:bluetooth-control```
+```sh
+    snap install bluez
+    snap connect bluez:bluetooth-control
+    snap connect bluez:network-control
+    snap connect bluez:home
+```
  * Go to the project directory run: ```snapcraft```
  * Result file is `./deviceops-hello-world_0.0.1_armhf.snap`
 
@@ -67,34 +71,35 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
  * Install [BlueZ](http://www.bluez.org/)
 ```sh
     snap install bluez
+    snap connect bluez:bluetooth-control
+    snap connect bluez:network-control
+    snap connect bluez:home
 ```
  * Copy `./deviceops-hello-world_0.0.1_armhf.snap` in to the gateway home directory.
- * Run install command: `sudo snap install ~/deviceops-hello-world_0.0.1_armhf.snap --devmode --dangerous`
+ * Run install command: `sudo snap install ~/deviceops-hello-world_0.0.1_armhf.snap --dangerous`
+ * Connect plugs:
+```sh
+    snap stop --disable deviceops-hello-world
+    snap connect deviceops-hello-world:network :network
+    snap connect deviceops-hello-world:bluetooth-control :bluetooth-control
+    snap connect deviceops-hello-world:network-control :network-control
+    snap start --enable deviceops-hello-world
+```
 
 ## Troubleshoot
 
-#### HCI Devices list is empty
+#### HCI devices list is empty
 
  * `sudo bluez.hcitool dev` show empty list of devices. 
- * `dmesg | grep blue` show: 
-```
-    [ 1447.938933] audit: type=1400 audit(1522961095.899:76): apparmor="DENIED" operation="create" profile="snap.bluez.hcicofig" pid=4254 family="bluetooth" sock_type="raw" protocol=1 requested_mask="create" denied_mask="create"
-```
- * Reinstall [BlueZ](http://www.bluez.org/) with `--devmode` flag:
-```sh
-    snap install bluez --devmode
-    snap connect bluez:bluetooth-control
-```
  * Enable HCI devices:
 ```sh
     sudo bluez.bluetoothctl
     power on
-    scan on
 ```
 
-#### ERR code CERT_NOT_YET_VALID when snapcraft
+#### CERT_NOT_YET_VALID when snap is crafting
  
- * Switch into `classic` mode.
+ * Switch to `classic` mode.
  * Execute following commands:
 ```sh
     sudo update-ca-certificates
