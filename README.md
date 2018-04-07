@@ -24,12 +24,12 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 
 #### Ubuntu/Debian/Raspbian (locally)
 
-```sh
+```
     sudo apt-get install bluetooth bluez libbluetooth-dev libudev-dev
 ```
 
 ## Running locally
-```sh
+```
     git clone git@git.rigado.com:cascade/deviceops-hello-world.git
     cd deviceops-hello-world
     git checkout develop
@@ -42,14 +42,14 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 #### RPI3 Ubuntu Core 16.04 (armhf)
 
  * Setup [development tools](https://developer.ubuntu.com/core/get-started/developer-setup) (snap classic)
-```sh
+```
    snap install classic --edge --devmode
    sudo classic
    sudo apt update
    sudo apt install snapcraft build-essential git
 ```
  * Install [BlueZ](http://www.bluez.org/)
-```sh
+```
     snap install bluez
     snap connect bluez:bluetooth-control
     snap connect bluez:network-control
@@ -63,13 +63,13 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 #### Rigado VESTA200B Ubuntu Core 16.04 (armhf)
  
  * Setup edge packages:
-```sh
+```
     snap install rigado-edge-connect --edge --devmode
     snap connect rigado-edge-connect:bluetooth-control
     snap connect rigado-edge-connect:physical-memory-control
 ```
  * Install [BlueZ](http://www.bluez.org/)
-```sh
+```
     snap install bluez
     snap connect bluez:bluetooth-control
     snap connect bluez:network-control
@@ -78,7 +78,7 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
  * Copy `./deviceops-hello-world_0.0.1_armhf.snap` in to the gateway home directory.
  * Run install command: `sudo snap install ~/deviceops-hello-world_0.0.1_armhf.snap --dangerous`
  * Connect plugs:
-```sh
+```
     snap stop --disable deviceops-hello-world
     snap connect deviceops-hello-world:network :network
     snap connect deviceops-hello-world:bluetooth-control :bluetooth-control
@@ -92,7 +92,7 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 
  * `sudo bluez.hcitool dev` show empty list of devices. 
  * Enable HCI devices:
-```sh
+```
     sudo bluez.bluetoothctl
     power on
 ```
@@ -101,7 +101,7 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
  
  * Switch to `classic` mode.
  * Execute following commands:
-```sh
+```
     sudo update-ca-certificates
     sudo service ntp stop
     sudo ntpdate -s time.nist.gov
