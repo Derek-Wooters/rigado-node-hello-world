@@ -23,6 +23,6 @@ apps:
     daemon: simple
     restart-condition: always
     plugs:
-      - home
       - network
+      - network-control
       - bluetooth-control
