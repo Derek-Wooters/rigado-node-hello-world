@@ -8,7 +8,7 @@ The application is daemon which discovers Nordic Thingy:52 and resends data to M
 Configuration file: [./config.json](./config.json)
  
  * `ble` - section store configuration related with Bluetooth
- * `ble.deviceMac` - string can be `"*"` and connects to any available Nordic Thingy:52 or `"CF:AA:13:A1:5C:A5"` and connects to particular device
+ * `ble.deviceMAC` - string can be `"*"` and connects to any available Nordic Thingy:52 or `"CF:AA:13:A1:5C:A5"` and connects to particular device
  * `mqtt` - configuration of connection to MQTT Broker
  * `mqtt.topic` - can contain placeholder `{hostname}` which will be replaced by gateway hostname on application startup
 
@@ -90,4 +90,15 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
     sudo bluez.bluetoothctl
     power on
     scan on
+```
+
+#### ERR code CERT_NOT_YET_VALID when snapcraft
+ 
+ * Switch into `classic` mode.
+ * Execute following commands:
+```sh
+    sudo update-ca-certificates
+    sudo service ntp stop
+    sudo ntpdate -s time.nist.gov
+    sudo service ntp start
 ```
