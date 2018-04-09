@@ -102,8 +102,8 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
  * Switch to `classic` mode.
  * Execute following commands:
 ```
-    sudo update-ca-certificates
     sudo service ntp stop
     sudo ntpdate -s time.nist.gov
     sudo service ntp start
+    sudo update-ca-certificates
 ```
