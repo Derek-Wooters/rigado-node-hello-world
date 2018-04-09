@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./index.js",
+    "lint": "./node_modules/.bin/eslint .",
+    "lint:fix": "npm run lint -- --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
@@ -30,5 +32,10 @@
   "dependencies": {
     "mqtt": "^2.17.0",
     "thingy52": "^1.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.10.0"
   }
 }
