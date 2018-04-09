@@ -1,5 +1,5 @@
 {
-  "name": "deviceops-hello-world",
+  "name": "thingy-hello-world",
   "version": "0.0.1",
   "description": "Example of snapped Node.js application for communications with Nordic Thingy:52",
   "main": "index.js",

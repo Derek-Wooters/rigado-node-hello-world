@@ -6,7 +6,7 @@ confinement: strict
 grade: devel
 
 parts:
-  deviceops-hello-world:
+  thingy-hello-world:
     plugin: nodejs
     source: .
     build-packages:
@@ -18,8 +18,8 @@ parts:
       - bluez
 
 apps:
-  deviceops-hello-world:
-    command: bin/deviceops-hello-world
+  thingy-hello-world:
+    command: bin/thingy-hello-world
     daemon: simple
     restart-condition: always
     plugs:
