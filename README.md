@@ -24,17 +24,18 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 
 #### Ubuntu/Debian/Raspbian (locally)
 
-```
-    sudo apt-get install bluetooth bluez libbluetooth-dev libudev-dev
+```bash
+sudo apt-get install bluetooth bluez libbluetooth-dev libudev-dev
 ```
 
 ## Running locally
-```
-    git clone git@git.rigado.com:cascade/deviceops-hello-world.git
-    cd deviceops-hello-world
-    git checkout develop
-    npm install
-    npm run start
+
+```bash
+git clone git@git.rigado.com:cascade/deviceops-hello-world.git
+cd deviceops-hello-world
+git checkout develop
+npm install
+npm run start
 ```
 
 ## Building snap
@@ -42,19 +43,23 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 #### RPI3 Ubuntu Core 16.04 (armhf)
 
  * Setup [development tools](https://developer.ubuntu.com/core/get-started/developer-setup) (snap classic)
+
+```bash
+snap install classic --edge --devmode
+sudo classic
+sudo apt update
+sudo apt install snapcraft build-essential git
 ```
-   snap install classic --edge --devmode
-   sudo classic
-   sudo apt update
-   sudo apt install snapcraft build-essential git
-```
+
  * Install [BlueZ](http://www.bluez.org/)
+
+```bash
+snap install bluez
+snap connect bluez:bluetooth-control
+snap connect bluez:network-control
+snap connect bluez:home
 ```
-    snap install bluez
-    snap connect bluez:bluetooth-control
-    snap connect bluez:network-control
-    snap connect bluez:home
-```
+
  * Go to the project directory run: ```snapcraft```
  * Result file is `./deviceops-hello-world_0.0.1_armhf.snap`
 
@@ -62,28 +67,34 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 
 #### Rigado VESTA200B Ubuntu Core 16.04 (armhf)
  
- * Setup edge packages:
+ * Setup brand packages: 
+
+```bash
+snap stop --disable rigado-devkit
+snap install rigado-edge-connect --edge --devmode
+snap connect rigado-edge-connect:bluetooth-control
+snap connect rigado-edge-connect:physical-memory-control
 ```
-    snap install rigado-edge-connect --edge --devmode
-    snap connect rigado-edge-connect:bluetooth-control
-    snap connect rigado-edge-connect:physical-memory-control
-```
+
  * Install [BlueZ](http://www.bluez.org/)
+
+```bash
+snap install bluez
+snap connect bluez:bluetooth-control
+snap connect bluez:network-control
+snap connect bluez:home
 ```
-    snap install bluez
-    snap connect bluez:bluetooth-control
-    snap connect bluez:network-control
-    snap connect bluez:home
-```
+
  * Copy `./deviceops-hello-world_0.0.1_armhf.snap` in to the gateway home directory.
  * Run install command: `sudo snap install ~/deviceops-hello-world_0.0.1_armhf.snap --dangerous`
  * Connect plugs:
-```
-    snap stop --disable deviceops-hello-world
-    snap connect deviceops-hello-world:network :network
-    snap connect deviceops-hello-world:bluetooth-control :bluetooth-control
-    snap connect deviceops-hello-world:network-control :network-control
-    snap start --enable deviceops-hello-world
+
+```bash
+snap stop --disable deviceops-hello-world
+snap connect deviceops-hello-world:network :network
+snap connect deviceops-hello-world:bluetooth-control :bluetooth-control
+snap connect deviceops-hello-world:network-control :network-control
+snap start --enable deviceops-hello-world
 ```
 
 ## Troubleshoot
@@ -92,18 +103,25 @@ This application is using [Nordic-Thingy52-Nodejs](https://github.com/NordicPlay
 
  * `sudo bluez.hcitool dev` show empty list of devices. 
  * Enable HCI devices:
-```
-    sudo bluez.bluetoothctl
-    power on
+
+```bash
+sudo bluez.bluetoothctl
+power on
 ```
 
 #### CERT_NOT_YET_VALID when snap is crafting
  
  * Switch to `classic` mode.
  * Execute following commands:
+
+```bash
+sudo service ntp stop
+sudo ntpdate -s time.nist.gov
+sudo service ntp start
+sudo update-ca-certificates
 ```
-    sudo service ntp stop
-    sudo ntpdate -s time.nist.gov
-    sudo service ntp start
-    sudo update-ca-certificates
-```
+
+#### `Command Disallowed (0xc)` while app is running on VESTA Gateway
+
+By default, the application uses `hci0` interface which can be locked by other snap.
+To avoid this issue disable or remove other snaps which use `hci0` interface.
