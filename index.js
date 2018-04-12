@@ -2,13 +2,32 @@
 
 const os = require('os');
 const MQTT = require('mqtt');
+
 let Thingy = null;
+
+const LOG_ERR = 'ERR';
+const LOG_MQTT = 'MQTT';
+const LOG_BLE = 'BLE';
+const LOG_SEND = 'SEND';
+const LOG_APP = 'APP';
+const BROKER_STATE_READY = 'ready';
+const BROKER_STATE_CONNECTING = 'connecting';
+const BROKER_STATE_CONNECTED = 'connected';
+const APP_STATE_RUNNING = 'running';
+const APP_STATE_STOPPING = 'stopping';
+const SEND_GATEWAY_CONNECTED = 'GATEWAY_CONNECTED';
+const SEND_DEVICE_CONNECTED = 'DEVICE_CONNECTED';
+
+const BROKER_CONNECT_INTERVAL = 3000;
+const DISCOVER_RESTART_TIMEOUT = 5000; // XXX: workaround for noble-device issue
+const SENDING_INTERVAL = 1500;
+const APPLICATION_START_TIMEOUT = 5000; // XXX: Wait HCI devices on system startup
 
 let brokerConnectTaskId = null;
 let dataTransmissionTaskId = null;
 
-let connectingToBroker = false;
-let cleanup = false;
+let brokerConnectionState = BROKER_STATE_READY;
+let applicationState = APP_STATE_RUNNING;
 
 let mqttClient = null;
 let connectedThingy = null;
@@ -18,8 +37,7 @@ const thingyState = {
     y: 0,
     z: 0
   },
-  button: false,
-  timestamp: 0
+  button: false
 };
 
 // Commons
@@ -33,6 +51,18 @@ const loadConfig = () => {
   return config;
 };
 
+const print = (context, msg, val = '') => { // TODO: Logging level
+  if (!context) {
+    console.log('=========================');
+  }
+  else if (context === LOG_ERR) {
+    console.error(msg, val);
+  }
+  else {
+    console.log(`[${context}] ${msg}`, val);
+  }
+};
+
 // Broker Utils
 // ==========
 
@@ -44,15 +74,15 @@ const brokerDisconnect = () => {
 };
 
 const brokerConnect = (mqttConfig) => {
-  connectingToBroker = true;
+  brokerConnectionState = BROKER_STATE_CONNECTING;
   const mqttAddr = `${mqttConfig.host}:${mqttConfig.port}`;
-  console.log(`[MQTT] Connecting to: ${mqttAddr}`);
+  print(LOG_MQTT, `Connecting to: ${mqttAddr}`);
 
   const connectionProblemsHandler = (err) => {
     if (err) {
-      console.log('[MQTT] Connection problem, disconnecting ... ', err);
+      print(LOG_MQTT, 'Connection problem, disconnecting ...', err);
       brokerDisconnect();
-      connectingToBroker = false;
+      brokerConnectionState = BROKER_STATE_READY;
     }
   };
 
@@ -64,8 +94,8 @@ const brokerConnect = (mqttConfig) => {
 
   client.on('connect', () => {
     mqttClient = client;
-    console.log(`[MQTT] Successfully connected to: ${mqttAddr}`);
-    connectingToBroker = false;
+    print(LOG_MQTT, `Successfully connected to: ${mqttAddr}`);
+    brokerConnectionState = BROKER_STATE_CONNECTED;
   });
   client.on('close', connectionProblemsHandler);
   client.on('error', connectionProblemsHandler);
@@ -74,17 +104,17 @@ const brokerConnect = (mqttConfig) => {
 };
 
 const startBrokerConnectTask = (config) => {
-  console.log('[MQTT] Start Broker Connect Task ...');
-  const connectionInterval = 3 * 1000;
+  print(LOG_MQTT, 'Start Broker Connect Task ...');
   return setInterval(() => {
-    if (connectingToBroker || !mqttClient) {
+    if (brokerConnectionState !== BROKER_STATE_CONNECTING
+        && brokerConnectionState !== BROKER_STATE_CONNECTED) {
       brokerConnect(config.mqtt);
     }
-  }, connectionInterval);
+  }, BROKER_CONNECT_INTERVAL);
 };
 
 const stopBrokerConnectTask = () => {
-  console.log('[MQTT] Stop Broker Connect Task ...');
+  print(LOG_MQTT, 'Stop Broker Connect Task ...');
   clearInterval(brokerConnectTaskId);
   brokerDisconnect();
 };
@@ -107,17 +137,17 @@ const startDiscoverThingyTask = (config) => {
       connectAndSetupThingy(thingy); // eslint-disable-line no-use-before-define
     }
   };
-  console.log('[BLE] Start Discovery Task ...');
+  print(LOG_BLE, 'Start Discovery Task ...');
   const id = macToId(config.ble.deviceMAC);
   Thingy.discoverWithFilter((device) => {
-    console.log('[BLE] Discover:', device.id, 'target:', id);
+    print(LOG_BLE, `Discover: ${device.id} target: ${id}`);
     if (id === '*') return true;
     return id === device.id;
   }, handleDiscover);
 };
 
 const stopDiscoverThingyTask = (disconnected) => {
-  console.log('[BLE] Stop Discovery Task ...');
+  print(LOG_BLE, 'Stop Discovery Task ...');
   Thingy.stopDiscover((err) => {
     if (err) {
       console.log(err);
@@ -126,23 +156,23 @@ const stopDiscoverThingyTask = (disconnected) => {
   disconnectThingy(disconnected);
 };
 
-const restartDiscoverThingyTask = (disconnected) => { // XXX: workaround for noble-device issue
+const restartDiscoverThingyTask = (disconnected) => {
   const config = loadConfig();
   stopDiscoverThingyTask(disconnected);
   setTimeout(() => {
     startDiscoverThingyTask(config);
-  }, 5 * 1000);
+  }, DISCOVER_RESTART_TIMEOUT);
 };
 
 const connectAndSetupThingy = (thingy) => {
   const handleError = (error) => {
     if (error) {
-      console.log('[BLE] Connection/Setup problem, disconnecting ...', error);
+      print(LOG_BLE, 'Connection/Setup problem, disconnecting ...', error);
       restartDiscoverThingyTask();
     }
   };
 
-  console.log('[BLE] Connecting to the Thingy:52', thingy.id);
+  print(LOG_BLE, 'Connecting to the Thingy:52', thingy.id);
   thingy.connectAndSetUp((error) => {
     if (error) handleError(error);
     else {
@@ -151,7 +181,7 @@ const connectAndSetupThingy = (thingy) => {
         color: 2,
         intensity: 100,
         delay: 1000
-      });
+      }, handleError);
       thingy.button_enable(handleError);
       thingy.on('buttonNotif', (state) => {
         if (state === 'Pressed') {
@@ -167,11 +197,11 @@ const connectAndSetupThingy = (thingy) => {
       });
       // Service
       thingy.on('disconnect', () => {
-        console.log('[BLE] Thingy:52 disconnected');
+        print(LOG_BLE, 'Thingy:52 disconnected');
         restartDiscoverThingyTask(true);
       });
       connectedThingy = thingy;
-      console.log('[BLE] Successfully connected to ', thingy.id);
+      print(LOG_BLE, 'Successfully connected to ', thingy.id);
     }
   });
 };
@@ -179,26 +209,41 @@ const connectAndSetupThingy = (thingy) => {
 // Transmission Utils
 // ==========
 
-const transmission = (config) => {
-  thingyState.timestamp = Math.round((new Date()).getTime() / 1000);
-  const msg = JSON.stringify(thingyState);
+const send = (config, payload, status) => {
+  const msg = JSON.stringify({
+    status,
+    timestamp: Math.round((new Date()).getTime() / 1000),
+    payload
+  });
   mqttClient.publish(config.topic, msg);
-  console.log(`[TRS] Publish to ${config.topic} ${msg}`);
+  print(LOG_SEND, `Publish to ${config.topic} ${msg}`);
+};
+
+const sendDeviceState = (config) => {
+  send(config, thingyState, SEND_DEVICE_CONNECTED);
   thingyState.button = false;
 };
 
-const startDataTransmissionTask = (config) => {
-  console.log('[TRS] Start Transmission Task ...');
-  const transmissionInterval = 3 * 1000;
-  return setInterval(() => {
-    if (mqttClient && connectedThingy) {
-      transmission(config.mqtt);
-    }
-  }, transmissionInterval);
+const sendHealth = (config) => {
+  send(config, null, SEND_GATEWAY_CONNECTED);
 };
 
-const stopDataTransmissionTask = () => {
-  console.log('[TRS] Stop Transmission Task ...');
+const startSendingTask = (config) => {
+  print(LOG_SEND, 'Start Sending Task ...');
+  return setInterval(() => {
+    if (mqttClient) {
+      if (connectedThingy) {
+        sendDeviceState(config.mqtt);
+      }
+      else {
+        sendHealth(config.mqtt);
+      }
+    }
+  }, SENDING_INTERVAL);
+};
+
+const stopSendingTask = () => {
+  print(LOG_SEND, 'Stop Sending Task ...');
   clearInterval(dataTransmissionTaskId);
 };
 
@@ -206,26 +251,28 @@ const stopDataTransmissionTask = () => {
 // ==========
 
 const start = (config) => {
-  console.log('=== Thingy:52 to MQTT ===');
-  console.log('Configuration:', config);
-  console.log('=========================');
+  print();
+  print(LOG_APP, 'Starting with Config: ', config);
+  print();
 
   brokerConnectTaskId = startBrokerConnectTask(config);
   startDiscoverThingyTask(config);
-  dataTransmissionTaskId = startDataTransmissionTask(config);
+  dataTransmissionTaskId = startSendingTask(config);
 };
 
 const stop = () => {
-  if (cleanup) return;
-  cleanup = true;
-  console.log('=========================');
-  stopDataTransmissionTask();
+  if (applicationState === APP_STATE_STOPPING) return;
+  applicationState = APP_STATE_STOPPING;
+  print();
+  print(LOG_APP, 'Stopping ...');
+  stopSendingTask();
   stopBrokerConnectTask();
   stopDiscoverThingyTask();
 };
 
 const init = () => {
   const config = loadConfig();
+  print(LOG_APP, 'Initialize ...');
   // Setup noble lib
   process.env.NOBLE_HCI_DEVICE_ID = config.ble.hciDeviceNum;
   Thingy = require('thingy52');
@@ -234,12 +281,12 @@ const init = () => {
     stop();
   });
   process.on('uncaughtException', (err) => {
-    console.error('uncaughtException:', err);
+    print(LOG_ERR, 'uncaughtException:', err);
     try {
       stop();
     }
     catch (stopErr) {
-      console.error('Error while stop:', stopErr);
+      print(LOG_ERR, 'Error while stop:', stopErr);
     }
     finally {
       process.exit(-1);
@@ -252,6 +299,6 @@ const init = () => {
 // ==========
 
 const config = init();
-setTimeout(() => { // XXX: Wait HCI devices on system startup
+setTimeout(() => {
   start(config);
-}, 5 * 1000);
+}, APPLICATION_START_TIMEOUT);
