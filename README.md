@@ -1,4 +1,4 @@
-DeviceOps Hello World
+Cascade Hello World (Node.js)
 ====
 Example of snapped Node.js application for communications with [Nordic Thingy:52](https://www.nordicsemi.com/eng/Products/Nordic-Thingy-52).
 The application is daemon which discovers Nordic Thingy:52 and resends data to MQTT Broker according to the [config file](./config.json).
@@ -33,7 +33,6 @@ sudo apt-get install bluetooth bluez libbluetooth-dev libudev-dev
 ```bash
 git clone git@git.rigado.com:cascade/deviceops-hello-world.git
 cd deviceops-hello-world
-git checkout develop
 npm install
 npm run start
 ```
@@ -61,7 +60,7 @@ snap connect bluez:home
 ```
 
  * Go to the project directory run: ```snapcraft```
- * Result file is `./deviceops-hello-world_0.0.1_armhf.snap`
+ * Result file is `./rigado-node-hello-world_0.0.1_armhf.snap`
 
 ## Installing snap
 
@@ -85,16 +84,16 @@ snap connect bluez:network-control
 snap connect bluez:home
 ```
 
- * Copy `./deviceops-hello-world_0.0.1_armhf.snap` in to the gateway home directory.
- * Run install command: `sudo snap install ~/deviceops-hello-world_0.0.1_armhf.snap --dangerous`
+ * Copy `./rigado-node-hello-world_0.0.1_armhf.snap` in to the gateway home directory.
+ * Run install command: `sudo snap install ~/rigado-node-hello-world_0.0.1_armhf.snap --dangerous`
  * Connect plugs:
 
 ```bash
-snap stop --disable deviceops-hello-world
-snap connect deviceops-hello-world:network :network
-snap connect deviceops-hello-world:bluetooth-control :bluetooth-control
-snap connect deviceops-hello-world:network-control :network-control
-snap start --enable deviceops-hello-world
+snap stop --disable rigado-node-hello-world
+snap connect rigado-node-hello-world:network :network
+snap connect rigado-node-hello-world:bluetooth-control :bluetooth-control
+snap connect rigado-node-hello-world:network-control :network-control
+snap start --enable rigado-node-hello-world
 ```
 
 ## Troubleshoot
