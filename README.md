@@ -124,3 +124,13 @@ sudo update-ca-certificates
 
 By default, the application uses `hci0` interface which can be locked by other snap.
 To avoid this issue disable or remove other snaps which use `hci0` interface.
+
+#### `NobleDevice.connectAndSetUp` callback sometimes not invoke
+
+ * Reset Thingy power supply.
+ * Restart daemon, run:
+
+```bash
+snap stop rigado-node-hello-world
+snap start rigado-node-hello-world
+```

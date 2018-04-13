@@ -1,4 +1,7 @@
 {
+  "app": {
+    "sendInterval": 2000
+  },
   "ble": {
     "hciDeviceNum": 0,
     "deviceMAC": "*"

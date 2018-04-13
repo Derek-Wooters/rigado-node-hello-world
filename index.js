@@ -19,8 +19,7 @@ const SEND_GATEWAY_CONNECTED = 'GATEWAY_CONNECTED';
 const SEND_DEVICE_CONNECTED = 'DEVICE_CONNECTED';
 
 const BROKER_CONNECT_INTERVAL = 3000;
-const DISCOVER_RESTART_TIMEOUT = 5000; // XXX: workaround for noble-device issue
-const SENDING_INTERVAL = 1500;
+const DISCOVER_RESTART_TIMEOUT = 5000; // XXX: Workaround for noble-device issue
 const APPLICATION_START_TIMEOUT = 5000; // XXX: Wait HCI devices on system startup
 
 let brokerConnectTaskId = null;
@@ -239,7 +238,7 @@ const startSendingTask = (config) => {
         sendHealth(config.mqtt);
       }
     }
-  }, SENDING_INTERVAL);
+  }, config.app.sendInterval);
 };
 
 const stopSendingTask = () => {
