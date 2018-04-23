@@ -6,7 +6,7 @@ The application is daemon which discovers Nordic Thingy:52 and resends data to M
 ## Configuration
 
 Configuration file: [./config.json](./config.json)
- 
+
  * `ble` - section store configuration related with Bluetooth
  * `ble.deviceMAC` - string can be `"*"` and connects to any available Nordic Thingy:52 or `"CF:AA:13:A1:5C:A5"` and connects to particular device
  * `mqtt` - configuration of connection to MQTT Broker
@@ -31,15 +31,15 @@ sudo apt-get install bluetooth bluez libbluetooth-dev libudev-dev
 ## Running locally
 
 ```bash
-git clone git@git.rigado.com:cascade/deviceops-hello-world.git
-cd deviceops-hello-world
+git clone git@git.rigado.com:cascade/rigado-node-hello-world.git
+cd rigado-node-hello-world
 npm install
 npm run start
 ```
 
 ## Building snap
 
-#### RPI3 Ubuntu Core 16.04 (armhf)
+#### RPI3 runnning Ubuntu Core 16.04 (armhf)
 
  * Setup [development tools](https://developer.ubuntu.com/core/get-started/developer-setup) (snap classic)
 
@@ -64,9 +64,9 @@ snap connect bluez:home
 
 ## Installing snap
 
-#### Rigado VESTA200B Ubuntu Core 16.04 (armhf)
- 
- * Setup brand packages: 
+#### Rigado Cascade 500 running Ubuntu Core 16.04 (armhf)
+
+ * Setup brand packages:
 
 ```bash
 snap stop --disable rigado-devkit
@@ -100,7 +100,7 @@ snap start --enable rigado-node-hello-world
 
 #### HCI devices list is empty
 
- * `sudo bluez.hcitool dev` show empty list of devices. 
+ * `sudo bluez.hcitool dev` show empty list of devices.
  * Enable HCI devices:
 
 ```bash
@@ -109,7 +109,7 @@ power on
 ```
 
 #### CERT_NOT_YET_VALID when snap is crafting
- 
+
  * Switch to `classic` mode.
  * Execute following commands:
 

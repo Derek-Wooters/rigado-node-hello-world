@@ -1,5 +1,5 @@
 {
-  "name": "deviceops-hello-world",
+  "name": "rigado-node-hello-world",
   "version": "0.0.1",
   "dependencies": {
     "abbrev": {
