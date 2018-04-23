@@ -1,5 +1,8 @@
-Cascade Hello World (Node.js)
+Cascade Hello World (Node.js) Snap
 ====
+
+See the tutorial: https://deviceops.rigado.com/projects/cascade/en/latest/prototyping/sensor-cloud.html
+
 Example of snapped Node.js application for communications with [Nordic Thingy:52](https://www.nordicsemi.com/eng/Products/Nordic-Thingy-52).
 The application is daemon which discovers Nordic Thingy:52 and resends data to MQTT Broker according to the [config file](./config.json).
 
