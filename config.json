@@ -3,7 +3,7 @@
     "sendInterval": 2000
   },
   "ble": {
-    "hciDeviceNum": 0,
+    "hciDeviceNum": 1,
     "deviceMAC": "*"
   },
   "mqtt": {
