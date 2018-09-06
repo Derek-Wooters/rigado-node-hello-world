@@ -5,6 +5,9 @@ const MQTT = require('mqtt');
 
 let Thingy = null;
 
+const LOG_LEVEL_INFO = 1;
+const LOG_LEVEL_DEBUG = 0;
+
 const LOG_ERR = 'ERR';
 const LOG_MQTT = 'MQTT';
 const LOG_BLE = 'BLE';
@@ -38,27 +41,33 @@ const thingyState = {
   },
   button: false
 };
+let config = {};
 
 // Commons
 // ==========
 
 const loadConfig = () => {
-  const config = require('./config');
-  let { topic } = config.mqtt;
+  const c = require('./config');
+  let { topic } = c.mqtt;
   topic = topic.replace('{hostname}', os.hostname());
-  config.mqtt.topic = topic;
-  return config;
+  c.mqtt.topic = topic;
+  return c;
 };
 
-const print = (context, msg, val = '') => { // TODO: Logging level
+const print = (context, msg, val = '', level = LOG_LEVEL_DEBUG) => { // TODO: Logging level
+  let appLogLevel = config.app.logLevel;
   if (!context) {
-    console.log('=========================');
+    if (appLogLevel <= level) {
+      console.log('=========================');
+    }
   }
   else if (context === LOG_ERR) {
     console.error(msg, val);
   }
   else {
-    console.log(`[${context}] ${msg}`, val);
+    if (appLogLevel <= level) {
+      console.log(`[${context}] ${msg}`, val);
+    }
   }
 };
 
@@ -79,7 +88,7 @@ const brokerConnect = (mqttConfig) => {
 
   const connectionProblemsHandler = (err) => {
     if (err) {
-      print(LOG_MQTT, 'Connection problem, disconnecting ...', err);
+      print(LOG_ERR, 'Connection problem, disconnecting ...', err);
       brokerDisconnect();
       brokerConnectionState = BROKER_STATE_READY;
     }
@@ -93,7 +102,7 @@ const brokerConnect = (mqttConfig) => {
 
   client.on('connect', () => {
     mqttClient = client;
-    print(LOG_MQTT, `Successfully connected to: ${mqttAddr}`);
+    print(LOG_MQTT, `Successfully connected to: ${mqttAddr}`, "", LOG_LEVEL_INFO);
     brokerConnectionState = BROKER_STATE_CONNECTED;
   });
   client.on('close', connectionProblemsHandler);
@@ -139,7 +148,7 @@ const startDiscoverThingyTask = (config) => {
   print(LOG_BLE, 'Start Discovery Task ...');
   const id = macToId(config.ble.deviceMAC);
   Thingy.discoverWithFilter((device) => {
-    print(LOG_BLE, `Discover: ${device.id} target: ${id}`);
+    print(LOG_BLE, `Discover: ${device.id} target: ${id}`, "", LOG_LEVEL_INFO);
     if (id === '*') return true;
     return id === device.id;
   }, handleDiscover);
@@ -149,7 +158,7 @@ const stopDiscoverThingyTask = (disconnected) => {
   print(LOG_BLE, 'Stop Discovery Task ...');
   Thingy.stopDiscover((err) => {
     if (err) {
-      console.log(err);
+      print(LOG_ERR, 'Connection/Setup problem, disconnecting ...', err);
     }
   });
   disconnectThingy(disconnected);
@@ -166,12 +175,12 @@ const restartDiscoverThingyTask = (disconnected) => {
 const connectAndSetupThingy = (thingy) => {
   const handleError = (error) => {
     if (error) {
-      print(LOG_BLE, 'Connection/Setup problem, disconnecting ...', error);
+      print(LOG_ERR, 'Connection/Setup problem, disconnecting ...', error);
       restartDiscoverThingyTask();
     }
   };
 
-  print(LOG_BLE, 'Connecting to the Thingy:52', thingy.id);
+  print(LOG_BLE, 'Connecting to the Thingy:52', thingy.id, LOG_LEVEL_INFO);
   thingy.connectAndSetUp((error) => {
     if (error) handleError(error);
     else {
@@ -200,7 +209,7 @@ const connectAndSetupThingy = (thingy) => {
         restartDiscoverThingyTask(true);
       });
       connectedThingy = thingy;
-      print(LOG_BLE, 'Successfully connected to ', thingy.id);
+      print(LOG_BLE, 'Successfully connected to ', thingy.id, LOG_LEVEL_INFO);
     }
   });
 };
@@ -251,7 +260,7 @@ const stopSendingTask = () => {
 
 const start = (config) => {
   print();
-  print(LOG_APP, 'Starting with Config: ', config);
+  print(LOG_APP, 'Starting with Config: ', config, LOG_LEVEL_INFO);
   print();
 
   brokerConnectTaskId = startBrokerConnectTask(config);
@@ -270,7 +279,7 @@ const stop = () => {
 };
 
 const init = () => {
-  const config = loadConfig();
+  config = loadConfig();
   print(LOG_APP, 'Initialize ...');
   // Setup noble lib
   process.env.NOBLE_HCI_DEVICE_ID = config.ble.hciDeviceNum;
@@ -296,8 +305,7 @@ const init = () => {
 
 // Application
 // ==========
-
-const config = init();
+init();
 setTimeout(() => {
   start(config);
 }, APPLICATION_START_TIMEOUT);

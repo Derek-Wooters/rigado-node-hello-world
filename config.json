@@ -1,6 +1,7 @@
 {
   "app": {
-    "sendInterval": 2000
+    "sendInterval": 2000,
+    "logLevel": 1
   },
   "ble": {
     "hciDeviceNum": 1,
