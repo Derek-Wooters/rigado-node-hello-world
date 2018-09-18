@@ -6,8 +6,8 @@ const MQTT = require('mqtt');
 const LOGGING_LEVELS = {
   FATAL: 0,
   ERROR: 1,
-  DEBUG: 2,
-  INFO: 3
+  DEBUG: 3,
+  INFO: 2
 };
 
 let Thingy = null;
@@ -55,13 +55,11 @@ const loadConfig = () => {
 
 const log = (msg, data = '', level = LOGGING_LEVELS.DEBUG) => {
   const appLoggingLevel = LOGGING_LEVELS[config.app.loggingLevel];
-  if (appLoggingLevel <= level) {
-    if (LOGGING_LEVELS.ERROR <= level) {
-      console.error(msg, data);
-    }
-    else {
-      console.log(`${msg}`, data);
-    }
+  if (level <= LOGGING_LEVELS.ERROR) {
+    console.error(msg, data);
+  }
+  else if (level <= appLoggingLevel) {
+    console.log(`${msg}`, data);
   }
 };
 
