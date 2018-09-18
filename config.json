@@ -8,7 +8,7 @@
     "deviceMAC": "*"
   },
   "mqtt": {
-    "host": "broker.hivemq.com",
+    "host": "demo-mqtt.rigado.io",
     "port": 1883,
     "topic": "/gateway/{hostname}/sensors"
   }
