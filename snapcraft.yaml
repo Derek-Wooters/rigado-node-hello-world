@@ -1,9 +1,9 @@
 name: rigado-node-hello-world
-version: '1.1.0'
+version: '1.1.2'
 summary: Nordic Thingy:52 + Node.js snap example
 description: Example of snapped Node.js application for communications with Nordic Thingy:52
 confinement: strict
-grade: devel
+grade: stable
 
 parts:
   thingy-hello-world:
