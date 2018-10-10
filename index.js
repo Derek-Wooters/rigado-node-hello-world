@@ -81,33 +81,32 @@ const brokerConnect = (mqttConfig) => {
   const connectionProblemsHandler = (err) => {
     if (err) {
       log('Connection problem, disconnecting ...', err, LOGGING_LEVELS.ERROR);
-      brokerDisconnect();
-      brokerConnectionState = BROKER_STATE_READY;
     }
   };
-
-  const client = MQTT.connect({
+  log('new MQTT client creation ...');
+  mqttClient = MQTT.connect({
     protocol: 'mqtt',
     host: mqttConfig.host,
-    port: mqttConfig.port
+    port: mqttConfig.port,
+    reconnecting: true
   });
 
-  client.on('connect', () => {
-    mqttClient = client;
+  mqttClient.on('connect', () => {
     log(`Successfully connected to: ${mqttAddr}`, '', LOGGING_LEVELS.INFO);
     brokerConnectionState = BROKER_STATE_CONNECTED;
   });
-  client.on('close', connectionProblemsHandler);
-  client.on('error', connectionProblemsHandler);
-  client.on('end', connectionProblemsHandler);
-  client.on('offline', connectionProblemsHandler);
+
+  mqttClient.on('close', connectionProblemsHandler);
+  mqttClient.on('error', connectionProblemsHandler);
+  mqttClient.on('end', connectionProblemsHandler);
+  mqttClient.on('offline', connectionProblemsHandler);
 };
 
 const startBrokerConnectTask = (appConfig) => {
   log('Start Broker Connect Task ...');
   return setInterval(() => {
     if (brokerConnectionState !== BROKER_STATE_CONNECTING
-        && brokerConnectionState !== BROKER_STATE_CONNECTED) {
+      && brokerConnectionState !== BROKER_STATE_CONNECTED) {
       brokerConnect(appConfig.mqtt);
     }
   }, BROKER_CONNECT_INTERVAL);
