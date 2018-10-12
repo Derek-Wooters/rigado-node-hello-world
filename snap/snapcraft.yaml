@@ -1,0 +1,35 @@
+name: rigado-node-hello-world
+version: '1.1.2'
+summary: Nordic Thingy:52 + Node.js snap example
+description: Example of snapped Node.js application for communications with Nordic Thingy:52
+confinement: strict
+grade: stable
+
+environment:
+  LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$SNAP/lib"
+  LD_LIBRARY_PATH: "$SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH"
+  NODE_PATH: $SNAP/lib/node_modules
+
+parts:
+  thingy-hello-world:
+    plugin: nodejs
+    node-engine: "8.12.0"
+    node-package-manager: yarn
+    source: .
+    build-packages:
+      - libudev-dev
+      - libbluetooth-dev
+      - python
+      - g++
+      - make
+      - bluez
+
+apps:
+  thingy-hello-world:
+    command: bin/thingy-hello-world
+    daemon: simple
+    restart-condition: always
+    plugs: &plugs [network, network-control, bluetooth-control]
+  node:
+    command: "bin/node"
+    plugs: *plugs
