@@ -12,6 +12,7 @@ node_modules/
 prime/
 parts/
 stage/
+snap/.snapcraft/
 
 *.snap
 *.tar.bz2
