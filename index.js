@@ -12,22 +12,16 @@ const LOGGING_LEVELS = {
 
 let Thingy = null;
 
-const BROKER_STATE_READY = 'ready';
-const BROKER_STATE_CONNECTING = 'connecting';
-const BROKER_STATE_CONNECTED = 'connected';
 const APP_STATE_RUNNING = 'running';
 const APP_STATE_STOPPING = 'stopping';
 const SEND_GATEWAY_CONNECTED = 'GATEWAY_CONNECTED';
 const SEND_DEVICE_CONNECTED = 'DEVICE_CONNECTED';
 
-const BROKER_CONNECT_INTERVAL = 3000;
 const DISCOVER_RESTART_TIMEOUT = 5000; // XXX: Workaround for noble-device issue
 const APPLICATION_START_TIMEOUT = 5000; // XXX: Wait HCI devices on system startup
 
-let brokerConnectTaskId = null;
 let dataTransmissionTaskId = null;
 
-let brokerConnectionState = BROKER_STATE_READY;
 let applicationState = APP_STATE_RUNNING;
 
 let mqttClient = null;
@@ -74,49 +68,30 @@ const brokerDisconnect = () => {
 };
 
 const brokerConnect = (mqttConfig) => {
-  brokerConnectionState = BROKER_STATE_CONNECTING;
   const mqttAddr = `${mqttConfig.host}:${mqttConfig.port}`;
   log(`Connecting to: ${mqttAddr}`);
 
   const connectionProblemsHandler = (err) => {
     if (err) {
       log('Connection problem, disconnecting ...', err, LOGGING_LEVELS.ERROR);
-      brokerDisconnect();
-      brokerConnectionState = BROKER_STATE_READY;
     }
   };
-
-  const client = MQTT.connect({
+  log('new MQTT client creation ...');
+  mqttClient = MQTT.connect({
     protocol: 'mqtt',
     host: mqttConfig.host,
-    port: mqttConfig.port
+    port: mqttConfig.port,
+    reconnecting: true
   });
 
-  client.on('connect', () => {
-    mqttClient = client;
+  mqttClient.on('connect', () => {
     log(`Successfully connected to: ${mqttAddr}`, '', LOGGING_LEVELS.INFO);
-    brokerConnectionState = BROKER_STATE_CONNECTED;
   });
-  client.on('close', connectionProblemsHandler);
-  client.on('error', connectionProblemsHandler);
-  client.on('end', connectionProblemsHandler);
-  client.on('offline', connectionProblemsHandler);
-};
 
-const startBrokerConnectTask = (appConfig) => {
-  log('Start Broker Connect Task ...');
-  return setInterval(() => {
-    if (brokerConnectionState !== BROKER_STATE_CONNECTING
-        && brokerConnectionState !== BROKER_STATE_CONNECTED) {
-      brokerConnect(appConfig.mqtt);
-    }
-  }, BROKER_CONNECT_INTERVAL);
-};
-
-const stopBrokerConnectTask = () => {
-  log('Stop Broker Connect Task ...');
-  clearInterval(brokerConnectTaskId);
-  brokerDisconnect();
+  mqttClient.on('close', connectionProblemsHandler);
+  mqttClient.on('error', connectionProblemsHandler);
+  mqttClient.on('end', connectionProblemsHandler);
+  mqttClient.on('offline', connectionProblemsHandler);
 };
 
 // Thingy Utils
@@ -253,7 +228,7 @@ const stopSendingTask = () => {
 const start = (appConfig) => {
   log('Starting with Config: ', appConfig, LOGGING_LEVELS.INFO);
 
-  brokerConnectTaskId = startBrokerConnectTask(appConfig);
+  brokerConnect(appConfig.mqtt);
   startDiscoverThingyTask(appConfig);
   dataTransmissionTaskId = startSendingTask(appConfig);
 };
@@ -263,7 +238,7 @@ const stop = () => {
   applicationState = APP_STATE_STOPPING;
   log('Stopping ...');
   stopSendingTask();
-  stopBrokerConnectTask();
+  brokerDisconnect();
   stopDiscoverThingyTask();
 };
 

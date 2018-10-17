@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
-    "node": ">=6.11.4"
+    "node": ">=8.12.0"
   },
   "files": [
     "index.js",
@@ -30,7 +30,7 @@
   "author": "Rigado",
   "license": "MIT",
   "dependencies": {
-    "mqtt": "^2.17.0",
+    "mqtt": "^2.18.8",
     "thingy52": "^1.0.4"
   },
   "devDependencies": {

@@ -9,10 +9,10 @@ node_modules/
 
 ### Snapcraft ###
 
-snap/
 prime/
 parts/
 stage/
+snap/.snapcraft/
 
 *.snap
 *.tar.bz2
