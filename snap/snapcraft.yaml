@@ -1,29 +1,31 @@
-name: breezi-rigado-node-hello-world
-version: 1.1.4
-summary: Nordic Thingy:52 + Node.js snap example
-description: Example of snapped Node.js application for communications with Nordic Thingy:52
-confinement: strict
-grade: stable
-
-environment:
-  LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$SNAP/lib"
-  LD_LIBRARY_PATH: "$SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH"
-  NODE_PATH: $SNAP/lib/node_modules
-
-parts:
-  thingy-hello-world:
-    plugin: nodejs
-    node-engine: "8.12.0"
-    node-package-manager: yarn
-    source: .
-    build-packages: libudev-dev, libbluetooth-dev, python, g++, make, bluez
-
-apps:
-  thingy-hello-world:
+apps: 
+  node: 
+    command: bin/node
+    plugs: 
+      - network
+      - network-control
+      - bluetooth-control
+  thingy-hello-world: 
     command: bin/thingy-hello-world
     daemon: simple
+    plugs: 
+      - network
+      - network-control
+      - bluetooth-control
     restart-condition: always
-    plugs: &plugs [network, network-control, bluetooth-control]
-  node:
-    command: "bin/node"
-    plugs: *plugs
+confinement: strict
+description: "Example of snapped Node.js application for communications with Nordic Thingy:52"
+environment: 
+  LD_LIBRARY_PATH: "$SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH"
+  NODE_PATH: $SNAP/lib/node_modules
+grade: stable
+name: breezi-rigado-node-hello-world
+parts: 
+  thingy-hello-world: 
+    build-packages: "libudev-dev, libbluetooth-dev, python, g++, make, bluez"
+    node-engine: "8.12.0"
+    node-package-manager: yarn
+    plugin: nodejs
+    source: "."
+summary: "Nordic Thingy:52 + Node.js snap example"
+version: "1.1.4"
