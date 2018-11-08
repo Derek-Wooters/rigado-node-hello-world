@@ -16,13 +16,7 @@ parts:
     node-engine: "8.12.0"
     node-package-manager: yarn
     source: .
-    build-packages:
-      - libudev-dev
-      - libbluetooth-dev
-      - python
-      - g++
-      - make
-      - bluez
+    build-packages: libudev-dev, libbluetooth-dev, python, g++, make, bluez
 
 apps:
   thingy-hello-world:
