@@ -1,17 +1,11 @@
 apps: 
   node: 
     command: bin/node
-    plugs: 
-      - network
-      - network-control
-      - bluetooth-control
+    plugs: network, network-control, bluetooth-control
   thingy-hello-world: 
     command: bin/thingy-hello-world
     daemon: simple
-    plugs: 
-      - network
-      - network-control
-      - bluetooth-control
+    plugs: network, network-control, bluetooth-control
     restart-condition: always
 confinement: strict
 description: "Example of snapped Node.js application for communications with Nordic Thingy:52"
